@@ -16,7 +16,8 @@ export function displayText(col: Column, row: Row, lk: Lookups): string {
   switch (col.type) {
     case 'employee': return lk.employeeName(v)
     case 'employees': return (v as string[]).map(lk.employeeName).join('; ')
-    case 'project': return `${v} — ${lk.projectName(v)}`
+    case 'project':
+    case 'anyproject': return `${v} — ${lk.projectName(v)}`
     case 'client': return lk.clientName(v)
     case 'tags': return Array.isArray(v) ? v.join('; ') : String(v)
     default: return Array.isArray(v) ? v.join('; ') : String(v)
@@ -52,6 +53,7 @@ export function renderCell(col: Column, row: Row, lk: Lookups): ReactNode {
       )
     }
     case 'project':
+    case 'anyproject':
       return (
         <span className="whitespace-nowrap">
           <span className="font-mono text-xs text-slate-400">{v}</span> <span>{lk.projectName(v)}</span>
@@ -119,6 +121,7 @@ export function DataTable({ readTable, writeTable, columns, entity, exportName, 
   const filterOptions = (c: Column): { value: string; label: string }[] => {
     if (c.type === 'employee' || c.type === 'employees') return lk.employees.map((e) => ({ value: e.id, label: e.name }))
     if (c.type === 'project') return lk.projects.map((p) => ({ value: p.id, label: `${p.id} — ${p.name}` }))
+    if (c.type === 'anyproject') return [...lk.projects, ...lk.dmProjects].map((p) => ({ value: p.id, label: `${p.id} — ${p.name}` }))
     if (c.type === 'client') return lk.clients.map((p) => ({ value: p.id, label: p.company_name }))
     return (c.options ?? []).map((o) => ({ value: o, label: o }))
   }

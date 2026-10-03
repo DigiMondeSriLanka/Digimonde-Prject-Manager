@@ -105,6 +105,15 @@ insert into public.tasks (project_id, name, description, category, assigned_to, 
 ('PRJ-009', 'Script & storyboard for 6 episodes',      'Narrative arc, shot lists and storyboards.',   'Content',    '{EMP-010,EMP-012}', 'EMP-012', 'Medium',   'Completed',   current_date - 25, current_date - 15, current_date - 16, 20, 'Low',    null),
 ('PRJ-009', 'Studio shoot — episodes 1–3',             'Two-day shoot with talent.',                   'Content',    '{EMP-012}',         'EMP-012', 'High',     'Blocked',     current_date - 10, current_date + 1,  null,              30, 'High',   'Client paused until new gym location opens.');
 
+-- ---------- Tasks for DM projects (needs migration 0003) ----------
+insert into public.tasks (project_id, name, description, category, assigned_to, owner_id, priority, status, start_date, due_date, completion_date, estimated_hours, risk, comments) values
+('DM-001', 'October content calendar',            '30 posts planned with captions and hashtags.', 'Content',   '{EMP-011,EMP-010}', 'EMP-009', 'High',   'Completed',   current_date - 12, current_date - 8,  current_date - 9, 10, 'Low',    null),
+('DM-001', 'Festival campaign creatives',          '8 carousel + 4 reels for the festival week.',  'Design',    '{EMP-007,EMP-011}', 'EMP-009', 'High',   'In Progress', current_date - 5,  current_date + 3,  null,             14, 'Medium', null),
+('DM-001', 'Monthly performance report',           'Reach, engagement and boosted post ROI.',      'Marketing', '{EMP-009}',         'EMP-009', 'Medium', 'Backlog',     current_date + 20, current_date + 28, null,             4,  'Low',    null),
+('DM-002', 'Product photo & reels shoot',          'Studio shoot for 12 SKUs.',                    'Content',   '{EMP-012,EMP-010}', 'EMP-009', 'Critical','Blocked',    current_date - 6,  current_date - 1,  null,             12, 'High',   'Waiting for product samples from client.'),
+('DM-002', 'TikTok trend scripts',                 '10 short-form scripts for November.',          'Content',   '{EMP-010}',         'EMP-009', 'Medium', 'In Progress', current_date - 3,  current_date + 6,  null,             6,  'Low',    null),
+('DM-003', 'Founder post series — fundraising',    '4-part story on the seed round journey.',      'Content',   '{EMP-010,EMP-001}', 'EMP-009', 'Medium', 'Review',      current_date - 4,  current_date + 2,  null,             5,  'Low',    null);
+
 -- ---------- Meetings & actions ----------
 insert into public.meetings (meeting_date, meeting_type, participants, topic, decision, action_item, owner_id, deadline, status) values
 (current_date - 14, 'Sprint Planning', '{EMP-002,EMP-003,EMP-004,EMP-005,EMP-007,EMP-008}', 'Sprint 7 planning — MVP',            'Payments moved into Sprint 7 scope.',          'Finalise Stripe account verification',         'EMP-002', current_date - 5,  'Completed'),

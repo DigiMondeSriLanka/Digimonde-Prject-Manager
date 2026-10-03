@@ -5,7 +5,11 @@ export type Row = Record<string, any>
 
 export type FieldType =
   | 'text' | 'textarea' | 'email' | 'number' | 'currency' | 'percent' | 'date'
-  | 'select' | 'employee' | 'employees' | 'project' | 'client' | 'tags'
+  | 'select' | 'employee' | 'employees' | 'client' | 'tags'
+  /** Dev project only (invoices, expenses, risks). */
+  | 'project'
+  /** Dev or DM project (tasks). */
+  | 'anyproject'
 
 export interface Column {
   key: string

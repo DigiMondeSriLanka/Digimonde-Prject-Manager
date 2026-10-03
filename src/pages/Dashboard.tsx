@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Bar, BarChart, CartesianGrid, Cell, LabelList, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts'
 import {
   Activity, AlarmClock, CalendarClock, CheckCircle2, CircleDashed, FolderKanban, Gauge, HeartPulse, LayoutDashboard,
@@ -52,7 +52,7 @@ export default function Dashboard() {
   const load = useCallback(async () => {
     const [a, b, c, d] = await Promise.all([
       supabase.from('projects_dev_v').select('*').order('start_date'),
-      supabase.from('projects_dm').select('*').order('id'),
+      supabase.from('projects_dm_v').select('*').order('id'),
       supabase.from('tasks_v').select('*'),
       supabase.rpc('get_team_workload'),
     ])
@@ -84,7 +84,10 @@ export default function Dashboard() {
 
   const today = todayISO()
   const P = useMemo(() => (dept === 'All' ? dev : dev.filter((p) => p.department === dept)), [dev, dept])
-  const T = useMemo(() => (dept === 'All' ? tasks : tasks.filter((t) => t.department === dept)), [tasks, dept])
+  // Dev and DM are separate project types: the Dev section only counts Dev tasks.
+  const devTasks = useMemo(() => tasks.filter((t) => t.project_type !== 'DM'), [tasks])
+  const dmTasks = useMemo(() => tasks.filter((t) => t.project_type === 'DM'), [tasks])
+  const T = useMemo(() => (dept === 'All' ? devTasks : devTasks.filter((t) => t.department === dept)), [devTasks, dept])
 
   const k = useMemo(() => {
     const activeDev = P.filter((p) => !CLOSED.includes(p.status))
@@ -218,8 +221,8 @@ export default function Dashboard() {
 
       <div className="mt-5"><TaskPivot tasks={T} projects={P} team={team} /></div>
 
-      <SectionTitle icon={<Megaphone size={15} />} title="Digital marketing projects" note="Separate project type — tracked by posts, not tasks" className="mt-10" />
-      <DmSummary projects={dm} />
+      <SectionTitle icon={<Megaphone size={15} />} title="Digital marketing projects" note="Separate project type — tracked by posts published" className="mt-10" />
+      <DmSection projects={dm} tasks={dmTasks} />
     </>
   )
 }
@@ -482,7 +485,7 @@ function UpcomingDeadlines({ projects, tasks, today }: { projects: Row[]; tasks:
 }
 
 /* ---------------- 6. DM progress summary ---------------- */
-function DmSummary({ projects }: { projects: Row[] }) {
+function DmSection({ projects, tasks }: { projects: Row[]; tasks: Row[] }) {
   const active = projects.filter((p) => p.status === 'Active')
   const inactive = projects.filter((p) => p.status !== 'Active')
   const planned = active.reduce((a, p) => a + p.posts_per_month, 0)
@@ -490,6 +493,17 @@ function DmSummary({ projects }: { projects: Row[] }) {
   const remaining = active.reduce((a, p) => a + p.remaining_posts, 0)
   const avg = planned ? Math.round((Math.min(published, planned) / planned) * 100) : 0
   const behind = active.filter((p) => Number(p.completion_pct) < 40).length
+  const openTasks = tasks.filter((t) => t.status !== 'Completed')
+  const overdue = tasks.filter((t) => t.health === 'Overdue').length
+
+  const chart = active.map((p) => ({
+    name: short(p.name, 30),
+    full: p.name,
+    Published: Math.min(p.published_posts, p.posts_per_month),
+    Remaining: p.remaining_posts,
+    pct: Math.round(Number(p.completion_pct)),
+  }))
+
   const Stat = ({ label, value, hint }: { label: string; value: ReactNode; hint?: string }) => (
     <div className="rounded-xl bg-slate-50 px-4 py-3">
       <p className="text-[11px] font-medium text-slate-500">{label}</p>
@@ -497,38 +511,91 @@ function DmSummary({ projects }: { projects: Row[] }) {
       {hint && <p className="text-[11px] text-slate-400">{hint}</p>}
     </div>
   )
-  const row = (p: Row) => {
-    const pct = Number(p.completion_pct)
-    const on = p.status === 'Active'
-    const tone = !on ? 'gray' : pct >= 75 ? 'green' : pct >= 40 ? 'yellow' : 'red'
-    return (
-      <div key={p.id} className={`grid grid-cols-1 items-center gap-1 sm:grid-cols-[minmax(0,1fr)_90px_minmax(0,1.2fr)_90px] sm:gap-4 ${on ? '' : 'opacity-60'}`}>
-        <div className="min-w-0"><p className="truncate text-sm font-medium text-navy">{p.name}</p><p className="text-[11px] text-slate-400">{p.id}</p></div>
-        <Badge value={p.status} tone={on ? 'green' : 'gray'} />
-        <Progress value={pct} tone={tone} />
-        <span className="text-xs text-slate-500 tabular-nums sm:text-right">{p.published_posts} / {p.posts_per_month} posts</span>
-      </div>
-    )
-  }
+
   return (
-    <Card title="Posting progress this month" subtitle="Totals count active DM projects only"
-      action={<Link to="/dm" className="text-xs font-medium text-brand hover:underline">All DM projects</Link>}>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        <Stat label="Active DM projects" value={active.length} hint={`${inactive.length} inactive`} />
-        <Stat label="Posts planned / month" value={planned} />
-        <Stat label="Published" value={published} />
-        <Stat label="Remaining" value={remaining} />
-        <Stat label="Overall completion" value={`${avg}%`} hint="Published ÷ planned" />
-        <Stat label="Behind plan" value={behind} hint="Below 40% published" />
+    <>
+      <Card title="Posting progress this month" subtitle="Totals count active DM projects only"
+        action={<Link to="/dm" className="text-xs font-medium text-brand hover:underline">All DM projects</Link>}>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+          <Stat label="Active DM projects" value={active.length} hint={`${inactive.length} inactive`} />
+          <Stat label="Posts planned / month" value={planned} />
+          <Stat label="Published" value={published} />
+          <Stat label="Remaining" value={remaining} />
+          <Stat label="Overall completion" value={`${avg}%`} hint={`${behind} project${behind === 1 ? '' : 's'} below 40%`} />
+          <Stat label="Open DM tasks" value={openTasks.length} hint={overdue ? `${overdue} overdue` : 'None overdue'} />
+        </div>
+
+        {chart.length > 0 && (
+          <div className="mt-5">
+            <p className="mb-1 text-xs font-semibold text-navy">Posts published per project</p>
+            <div style={{ height: Math.max(160, chart.length * 40 + 50) }}>
+              <ResponsiveContainer>
+                <BarChart data={chart} layout="vertical" margin={{ left: 0, right: 48, top: 4, bottom: 0 }} barCategoryGap={10}>
+                  <CartesianGrid horizontal={false} stroke={C.grid} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: C.axis }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" width={220} tick={{ fontSize: 12, fill: '#334155' }} axisLine={false} tickLine={false} />
+                  <Tooltip {...tooltipStyle} labelFormatter={(_, p) => {
+                    const d = p?.[0]?.payload
+                    return d ? `${d.full} · ${d.pct}% published` : ''
+                  }} />
+                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+                  <Bar dataKey="Published" stackId="a" fill={C.completed} stroke="#fff" strokeWidth={1} />
+                  <Bar dataKey="Remaining" stackId="a" fill={C.pending} radius={[0, 4, 4, 0]} stroke="#fff" strokeWidth={1}>
+                    <LabelList dataKey="pct" position="right" fontSize={11} fill="#475569" formatter={(v) => `${v}%`} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+      </Card>
+
+      <div className="mt-5">
+        <Card title="DM project progress" subtitle="Posts published this month and task progress for every DM project">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-[11px] tracking-wide text-slate-500 uppercase">
+                  <th className="px-2 py-2 font-semibold">Project</th>
+                  <th className="px-2 py-2 font-semibold">Status</th>
+                  <th className="px-2 py-2 font-semibold">Posts published</th>
+                  <th className="px-2 py-2 text-right font-semibold">Published / Planned</th>
+                  <th className="px-2 py-2 text-right font-semibold">Remaining</th>
+                  <th className="px-2 py-2 font-semibold">Tasks done</th>
+                  <th className="px-2 py-2 text-right font-semibold">Overdue tasks</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...active, ...inactive].map((p) => {
+                  const pct = Number(p.completion_pct)
+                  const on = p.status === 'Active'
+                  const tone = !on ? 'gray' : pct >= 75 ? 'green' : pct >= 40 ? 'yellow' : 'red'
+                  const taskPct = p.total_tasks ? (p.completed_tasks / p.total_tasks) * 100 : 0
+                  return (
+                    <tr key={p.id} className={`border-t border-slate-100 ${on ? '' : 'opacity-60'}`}>
+                      <td className="min-w-56 px-2 py-2"><p className="font-medium text-navy">{p.name}</p><p className="text-[11px] text-slate-400">{p.id}</p></td>
+                      <td className="px-2 py-2"><Badge value={p.status} tone={on ? 'green' : 'gray'} /></td>
+                      <td className="min-w-40 px-2 py-2"><Progress value={pct} tone={tone} /></td>
+                      <td className="px-2 py-2 text-right whitespace-nowrap text-navy tabular-nums">{p.published_posts} / {p.posts_per_month}</td>
+                      <td className="px-2 py-2 text-right text-slate-600 tabular-nums">{p.remaining_posts}</td>
+                      <td className="min-w-40 px-2 py-2">
+                        {p.total_tasks ? (
+                          <div className="flex items-center gap-2">
+                            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-success" style={{ width: `${taskPct}%` }} /></div>
+                            <span className="w-10 text-right text-xs text-slate-600 tabular-nums">{p.completed_tasks}/{p.total_tasks}</span>
+                          </div>
+                        ) : <span className="text-xs text-slate-300">No tasks</span>}
+                      </td>
+                      <td className={`px-2 py-2 text-right tabular-nums ${p.overdue_tasks ? 'font-semibold text-danger-700' : 'text-slate-400'}`}>{p.overdue_tasks}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       </div>
-      <div className="mt-5 space-y-3">{active.map(row)}</div>
-      {inactive.length > 0 && (
-        <>
-          <p className="mt-5 mb-2 text-[11px] font-semibold tracking-wide text-slate-400 uppercase">Inactive</p>
-          <div className="space-y-3">{inactive.map(row)}</div>
-        </>
-      )}
-    </Card>
+    </>
   )
 }
 

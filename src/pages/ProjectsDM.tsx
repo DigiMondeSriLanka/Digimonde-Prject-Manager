@@ -20,6 +20,9 @@ const columns: Column[] = [
   { key: 'published_posts', label: 'Published', type: 'number', min: 0 },
   { key: 'remaining_posts', label: 'Remaining', type: 'number', computed: true },
   { key: 'completion_pct', label: 'Completion', type: 'percent', computed: true },
+  { key: 'total_tasks', label: 'Tasks', type: 'number', computed: true },
+  { key: 'open_tasks', label: 'Open Tasks', type: 'number', computed: true },
+  { key: 'overdue_tasks', label: 'Overdue', type: 'number', computed: true, hideInTable: true },
   { key: 'risk_level', label: 'Risk Level', type: 'select', options: RISK_LEVELS, required: true },
   { key: 'notes', label: 'Notes', type: 'textarea', hideInTable: true },
 ]
@@ -33,7 +36,7 @@ export default function ProjectsDM() {
         subtitle="Digital marketing retainers and campaigns (Active / Inactive). Completion % = published posts ÷ posts per month."
       />
       <DataTable
-        readTable="projects_dm"
+        readTable="projects_dm_v"
         writeTable="projects_dm"
         columns={columns}
         entity="DM Project"

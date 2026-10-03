@@ -2,6 +2,7 @@ export const PROJECT_STATUSES = ['Planning', 'Research', 'Development', 'Testing
 export const DM_STATUSES = ['Active', 'Inactive'] as const
 export const PRIORITIES = ['Critical', 'High', 'Medium', 'Low'] as const
 export const DEV_DEPARTMENTS = ['Web', 'SD', 'Media', 'Other'] as const
+export const TASK_DEPARTMENTS = ['Web', 'SD', 'Media', 'Other', 'DM'] as const
 export const RISK_LEVELS = ['Low', 'Medium', 'High', 'Critical'] as const
 export const TASK_STATUSES = ['Backlog', 'Assigned', 'In Progress', 'Review', 'Testing', 'Completed', 'Blocked'] as const
 export const TASK_CATEGORIES = ['Development', 'Design', 'QA', 'DevOps', 'Content', 'Research', 'Management', 'Marketing', 'Other'] as const

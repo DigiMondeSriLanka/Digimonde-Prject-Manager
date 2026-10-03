@@ -1,7 +1,7 @@
 import { ListChecks } from 'lucide-react'
 import { DataTable } from '../components/DataTable'
 import { Badge, PageHeader } from '../components/ui'
-import { DEV_DEPARTMENTS, PRIORITIES, RISK_LEVELS, TASK_CATEGORIES, TASK_HEALTH, TASK_STATUSES } from '../lib/constants'
+import { TASK_DEPARTMENTS, PRIORITIES, RISK_LEVELS, TASK_CATEGORIES, TASK_HEALTH, TASK_STATUSES } from '../lib/constants'
 import { fmtDateTime } from '../lib/format'
 import type { Column } from '../lib/types'
 
@@ -14,8 +14,8 @@ const daysCell = (d: number | null) => {
 const columns: Column[] = [
   { key: 'id', label: 'Task ID', computed: true },
   { key: 'name', label: 'Task Name', required: true, width: 'min-w-56', wide: true },
-  { key: 'project_id', label: 'Project', type: 'project', required: true, filter: true },
-  { key: 'department', label: 'Dept', type: 'select', options: DEV_DEPARTMENTS, computed: true, filter: true, hideInTable: true },
+  { key: 'project_id', label: 'Project', type: 'anyproject', required: true, filter: true, help: 'Dev (PRJ-…) or DM (DM-…) project.' },
+  { key: 'department', label: 'Dept', type: 'select', options: TASK_DEPARTMENTS, computed: true, filter: true, hideInTable: true },
   { key: 'assigned_to', label: 'Assigned To', type: 'employees', filter: true, width: 'min-w-40' },
   { key: 'priority', label: 'Priority', type: 'select', options: PRIORITIES, required: true, filter: true },
   { key: 'status', label: 'Status', type: 'select', options: TASK_STATUSES, required: true, filter: true },
@@ -39,7 +39,7 @@ export default function Tasks() {
       <PageHeader
         icon={<ListChecks size={20} />}
         title="Task Management System"
-        subtitle="Tasks for Web, SD, Media and other projects. Days left and task health update automatically every day."
+        subtitle="Tasks for Dev (Web, SD, Media, Other) and DM projects. Days left and task health update automatically every day."
       />
       <DataTable
         readTable="tasks_v"

@@ -89,6 +89,12 @@ export function RecordForm({ open, row, columns, writeTable, entity, readOnly, d
       case 'project':
         return <RefSelect disabled={disabled} value={v || null} onChange={(x) => set(c.key, x ?? '')} placeholder="Select project…"
           options={lk.projects.map((p) => ({ value: p.id, label: p.name }))} />
+      case 'anyproject':
+        return <RefSelect disabled={disabled} value={v || null} onChange={(x) => set(c.key, x ?? '')} placeholder="Select Dev or DM project…"
+          options={[
+            ...lk.projects.map((p) => ({ value: p.id, label: p.name, hint: 'Dev' })),
+            ...lk.dmProjects.map((p) => ({ value: p.id, label: p.name, hint: 'DM' })),
+          ]} />
       case 'client':
         return <RefSelect disabled={disabled} value={v || null} onChange={(x) => set(c.key, x ?? '')} placeholder="Select client…"
           options={lk.clients.map((p) => ({ value: p.id, label: p.company_name }))} />
