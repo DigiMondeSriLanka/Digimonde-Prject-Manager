@@ -1,4 +1,5 @@
 export const PROJECT_STATUSES = ['Planning', 'Research', 'Development', 'Testing', 'Launch', 'Completed', 'On Hold', 'Cancelled'] as const
+export const DM_STATUSES = ['Active', 'Inactive'] as const
 export const PRIORITIES = ['Critical', 'High', 'Medium', 'Low'] as const
 export const DEV_DEPARTMENTS = ['Web', 'SD', 'Media', 'Other'] as const
 export const RISK_LEVELS = ['Low', 'Medium', 'High', 'Critical'] as const

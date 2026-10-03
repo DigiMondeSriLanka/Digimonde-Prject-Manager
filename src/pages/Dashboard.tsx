@@ -85,23 +85,19 @@ export default function Dashboard() {
   const today = todayISO()
   const P = useMemo(() => (dept === 'All' ? dev : dev.filter((p) => p.department === dept)), [dev, dept])
   const T = useMemo(() => (dept === 'All' ? tasks : tasks.filter((t) => t.department === dept)), [tasks, dept])
-  const D = dept === 'All' ? dm : [] // DM projects belong to the DM department only
 
   const k = useMemo(() => {
     const activeDev = P.filter((p) => !CLOSED.includes(p.status))
-    const activeDm = D.filter((p) => !CLOSED.includes(p.status))
     const openTasks = T.filter((t) => t.status !== 'Completed')
     const inWeek = (d: string | null) => !!d && d >= today && daysBetween(today, d) <= 7
     const scored = activeDev.filter((p) => p.health !== 'Gray')
     const score = scored.length
       ? Math.round(scored.reduce((a, p) => a + (p.health === 'Green' ? 100 : p.health === 'Yellow' ? 60 : 20), 0) / scored.length)
       : 100
-    const compl = [...P.filter((p) => p.status !== 'Cancelled').map((p) => Number(p.completion_pct)), ...D.filter((p) => p.status !== 'Cancelled').map((p) => Number(p.completion_pct))]
+    const compl = P.filter((p) => p.status !== 'Cancelled').map((p) => Number(p.completion_pct))
     return {
-      active: activeDev.length + activeDm.length,
-      activeDev: activeDev.length,
-      activeDm: activeDm.length,
-      completed: P.filter((p) => p.status === 'Completed').length + D.filter((p) => p.status === 'Completed').length,
+      active: activeDev.length,
+      completed: P.filter((p) => p.status === 'Completed').length,
       delayed: P.filter((p) => p.is_delayed).length,
       upcoming: activeDev.filter((p) => inWeek(p.target_date)).length + openTasks.filter((t) => inWeek(t.due_date)).length,
       totalTasks: T.length,
@@ -114,7 +110,7 @@ export default function Dashboard() {
       healthCounts: ['Green', 'Yellow', 'Red'].map((h) => scored.filter((p) => p.health === h).length),
       workload: ['Underutilized', 'Balanced', 'Overloaded'].map((s) => team.filter((e) => e.workload_status === s).length),
     }
-  }, [P, D, T, team, today])
+  }, [P, T, team, today])
 
   if (loading) return <div className="grid h-96 place-items-center"><Spinner /></div>
 
@@ -143,9 +139,11 @@ export default function Dashboard() {
         }
       />
 
+      <SectionTitle icon={<FolderKanban size={15} />} title="Development projects" note={dept === 'All' ? 'Web · SD · Media · Other' : `${dept} department`} />
+
       {/* KPI tiles */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="Active projects" value={k.active} icon={<FolderKanban size={16} />} tone="blue" hint={`${k.activeDev} dev · ${k.activeDm} DM`} />
+        <StatCard label="Active projects" value={k.active} icon={<FolderKanban size={16} />} tone="blue" hint={`of ${P.length} dev projects`} />
         <StatCard label="Completed projects" value={k.completed} icon={<CheckCircle2 size={16} />} tone="green" />
         <StatCard label="Delayed projects" value={k.delayed} icon={<TimerOff size={16} />} tone={k.delayed ? 'red' : 'green'} hint="Past target date" />
         <StatCard label="Upcoming deadlines" value={k.upcoming} icon={<CalendarClock size={16} />} tone="orange" hint="Projects & tasks due in 7 days" />
@@ -202,7 +200,7 @@ export default function Dashboard() {
 
       {/* Charts row 1 */}
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-3">
-        <StatusDonut projects={[...P, ...D]} />
+        <StatusDonut projects={P} />
         <div className="xl:col-span-2"><TaskCompletionChart projects={P} /></div>
       </div>
 
@@ -210,7 +208,7 @@ export default function Dashboard() {
 
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-3">
         <div className="xl:col-span-2"><WorkloadChart team={team} /></div>
-        <PriorityChart projects={[...P, ...D]} tasks={T} />
+        <PriorityChart projects={P} tasks={T} />
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-3">
@@ -218,9 +216,10 @@ export default function Dashboard() {
         <UpcomingDeadlines projects={P} tasks={T} today={today} />
       </div>
 
-      <div className="mt-5"><DmSummary projects={dm} /></div>
-
       <div className="mt-5"><TaskPivot tasks={T} projects={P} team={team} /></div>
+
+      <SectionTitle icon={<Megaphone size={15} />} title="Digital marketing projects" note="Separate project type — tracked by posts, not tasks" className="mt-10" />
+      <DmSummary projects={dm} />
     </>
   )
 }
@@ -230,7 +229,7 @@ function StatusDonut({ projects }: { projects: Row[] }) {
   const data = STATUS_GROUPS.map((g) => ({ name: g.name, color: g.color, value: projects.filter((p) => g.match.includes(p.status)).length }))
   const total = projects.length
   return (
-    <Card title="Project status" subtitle={`${total} projects (Dev + DM)`}>
+    <Card title="Project status" subtitle={`${total} development projects`}>
       <div className="relative h-52">
         <ResponsiveContainer>
           <PieChart>
@@ -484,40 +483,62 @@ function UpcomingDeadlines({ projects, tasks, today }: { projects: Row[]; tasks:
 
 /* ---------------- 6. DM progress summary ---------------- */
 function DmSummary({ projects }: { projects: Row[] }) {
-  const live = projects.filter((p) => p.status !== 'Cancelled')
-  const planned = live.reduce((a, p) => a + p.posts_per_month, 0)
-  const published = live.reduce((a, p) => a + p.published_posts, 0)
-  const remaining = live.reduce((a, p) => a + p.remaining_posts, 0)
-  const avg = live.length ? Math.round(live.reduce((a, p) => a + Number(p.completion_pct), 0) / live.length) : 0
-  const Stat = ({ label, value }: { label: string; value: ReactNode }) => (
-    <div className="rounded-xl bg-slate-50 px-4 py-3"><p className="text-[11px] font-medium text-slate-500">{label}</p><p className="text-xl font-bold text-navy tabular-nums">{value}</p></div>
+  const active = projects.filter((p) => p.status === 'Active')
+  const inactive = projects.filter((p) => p.status !== 'Active')
+  const planned = active.reduce((a, p) => a + p.posts_per_month, 0)
+  const published = active.reduce((a, p) => a + p.published_posts, 0)
+  const remaining = active.reduce((a, p) => a + p.remaining_posts, 0)
+  const avg = planned ? Math.round((Math.min(published, planned) / planned) * 100) : 0
+  const behind = active.filter((p) => Number(p.completion_pct) < 40).length
+  const Stat = ({ label, value, hint }: { label: string; value: ReactNode; hint?: string }) => (
+    <div className="rounded-xl bg-slate-50 px-4 py-3">
+      <p className="text-[11px] font-medium text-slate-500">{label}</p>
+      <p className="text-xl font-bold text-navy tabular-nums">{value}</p>
+      {hint && <p className="text-[11px] text-slate-400">{hint}</p>}
+    </div>
   )
+  const row = (p: Row) => {
+    const pct = Number(p.completion_pct)
+    const on = p.status === 'Active'
+    const tone = !on ? 'gray' : pct >= 75 ? 'green' : pct >= 40 ? 'yellow' : 'red'
+    return (
+      <div key={p.id} className={`grid grid-cols-1 items-center gap-1 sm:grid-cols-[minmax(0,1fr)_90px_minmax(0,1.2fr)_90px] sm:gap-4 ${on ? '' : 'opacity-60'}`}>
+        <div className="min-w-0"><p className="truncate text-sm font-medium text-navy">{p.name}</p><p className="text-[11px] text-slate-400">{p.id}</p></div>
+        <Badge value={p.status} tone={on ? 'green' : 'gray'} />
+        <Progress value={pct} tone={tone} />
+        <span className="text-xs text-slate-500 tabular-nums sm:text-right">{p.published_posts} / {p.posts_per_month} posts</span>
+      </div>
+    )
+  }
   return (
-    <Card title={<span className="flex items-center gap-2"><Megaphone size={15} className="text-brand" /> Digital marketing progress (Projects — DM)</span>}
-      subtitle="Posts published against this month’s plan"
+    <Card title="Posting progress this month" subtitle="Totals count active DM projects only"
       action={<Link to="/dm" className="text-xs font-medium text-brand hover:underline">All DM projects</Link>}>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        <Stat label="DM projects" value={live.length} />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <Stat label="Active DM projects" value={active.length} hint={`${inactive.length} inactive`} />
         <Stat label="Posts planned / month" value={planned} />
         <Stat label="Published" value={published} />
         <Stat label="Remaining" value={remaining} />
-        <Stat label="Avg completion" value={`${avg}%`} />
+        <Stat label="Overall completion" value={`${avg}%`} hint="Published ÷ planned" />
+        <Stat label="Behind plan" value={behind} hint="Below 40% published" />
       </div>
-      <div className="mt-4 space-y-3">
-        {live.map((p) => {
-          const pct = Number(p.completion_pct)
-          const tone = pct >= 75 ? 'green' : pct >= 40 ? 'yellow' : 'red'
-          return (
-            <div key={p.id} className="grid grid-cols-1 items-center gap-1 sm:grid-cols-[minmax(0,1fr)_120px_minmax(0,1.2fr)_90px] sm:gap-4">
-              <div className="min-w-0"><p className="truncate text-sm font-medium text-navy">{p.name}</p><p className="text-[11px] text-slate-400">{p.id}</p></div>
-              <Badge value={p.status} />
-              <Progress value={pct} tone={tone} />
-              <span className="text-xs text-slate-500 tabular-nums sm:text-right">{p.published_posts} / {p.posts_per_month} posts</span>
-            </div>
-          )
-        })}
-      </div>
+      <div className="mt-5 space-y-3">{active.map(row)}</div>
+      {inactive.length > 0 && (
+        <>
+          <p className="mt-5 mb-2 text-[11px] font-semibold tracking-wide text-slate-400 uppercase">Inactive</p>
+          <div className="space-y-3">{inactive.map(row)}</div>
+        </>
+      )}
     </Card>
+  )
+}
+
+function SectionTitle({ icon, title, note, className = 'mt-2' }: { icon: ReactNode; title: string; note?: string; className?: string }) {
+  return (
+    <div className={`mb-3 flex items-center gap-2 ${className}`}>
+      <span className="grid size-6 place-items-center rounded-md bg-navy text-white">{icon}</span>
+      <h2 className="text-sm font-semibold text-navy">{title}</h2>
+      {note && <span className="text-xs text-slate-400">· {note}</span>}
+    </div>
   )
 }
 

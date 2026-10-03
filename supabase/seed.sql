@@ -44,11 +44,11 @@ insert into public.projects_dev (id, name, description, department, owner_id, ma
 
 -- ---------- Project master database — DM ----------
 insert into public.projects_dm (id, name, description, client_id, owner_id, manager_id, handler_id, priority, status, start_date, posts_per_month, published_posts, risk_level, notes) values
-('DM-001', 'Ceylon Spice Co. — Social Media Management', 'Facebook + Instagram content, community management and boosting.', 'CLI-002', 'EMP-009', 'EMP-009', 'EMP-011', 'High',   'Launch',    current_date - 200, 30, 22, 'Low',    'Engagement up 18% MoM.'),
-('DM-002', 'GreenLeaf Organics — Instagram & TikTok',     'Short-form video and reels-led growth campaign.',                   'CLI-005', 'EMP-009', 'EMP-009', 'EMP-010', 'High',   'Launch',    current_date - 60,  24, 9,  'Medium', 'Behind schedule — waiting on product shoot.'),
-('DM-003', 'Digimonde — LinkedIn Thought Leadership',     'Founder-led LinkedIn content and company page growth.',             null,      'EMP-001', 'EMP-009', 'EMP-010', 'Medium', 'Launch',    current_date - 90,  12, 10, 'Low',    null),
-('DM-004', 'Helix Fitness — YouTube Shorts',              'Repurpose brand video series into Shorts.',                         'CLI-004', 'EMP-009', 'EMP-012', 'EMP-012', 'Medium', 'On Hold',   current_date - 25,  16, 4,  'High',   'Depends on PRJ-009 footage.'),
-('DM-005', 'Northwind Retail — Festive Season Ads',       'Paid social creatives for the festive sale.',                        'CLI-001', 'EMP-009', 'EMP-009', 'EMP-011', 'Low',    'Completed', current_date - 45,  20, 20, 'Low',    'ROAS 4.2x.');
+('DM-001', 'Ceylon Spice Co. — Social Media Management', 'Facebook + Instagram content, community management and boosting.', 'CLI-002', 'EMP-009', 'EMP-009', 'EMP-011', 'High',   'Active',    current_date - 200, 30, 22, 'Low',    'Engagement up 18% MoM.'),
+('DM-002', 'GreenLeaf Organics — Instagram & TikTok',     'Short-form video and reels-led growth campaign.',                   'CLI-005', 'EMP-009', 'EMP-009', 'EMP-010', 'High',   'Active',    current_date - 60,  24, 9,  'Medium', 'Behind schedule — waiting on product shoot.'),
+('DM-003', 'Digimonde — LinkedIn Thought Leadership',     'Founder-led LinkedIn content and company page growth.',             null,      'EMP-001', 'EMP-009', 'EMP-010', 'Medium', 'Active',    current_date - 90,  12, 10, 'Low',    null),
+('DM-004', 'Helix Fitness — YouTube Shorts',              'Repurpose brand video series into Shorts.',                         'CLI-004', 'EMP-009', 'EMP-012', 'EMP-012', 'Medium', 'Inactive',   current_date - 25,  16, 4,  'High',   'Depends on PRJ-009 footage.'),
+('DM-005', 'Northwind Retail — Festive Season Ads',       'Paid social creatives for the festive sale.',                        'CLI-001', 'EMP-009', 'EMP-009', 'EMP-011', 'Low',    'Inactive', current_date - 45,  20, 20, 'Low',    'ROAS 4.2x.');
 
 -- ---------- Tasks ----------
 insert into public.tasks (project_id, name, description, category, assigned_to, owner_id, priority, status, start_date, due_date, completion_date, estimated_hours, risk, comments) values

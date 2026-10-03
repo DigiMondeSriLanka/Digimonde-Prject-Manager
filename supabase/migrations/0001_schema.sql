@@ -156,7 +156,7 @@ create table public.projects_dm (
   manager_id      text references public.employees(id) on delete set null,
   handler_id      text references public.employees(id) on delete set null,
   priority        text not null default 'Medium' check (priority in ('Critical', 'High', 'Medium', 'Low')),
-  status          text not null default 'Planning' check (status in ('Planning', 'Research', 'Development', 'Testing', 'Launch', 'Completed', 'On Hold', 'Cancelled')),
+  status          text not null default 'Active' check (status in ('Active', 'Inactive')),
   start_date      date,
   reporting_month date not null default date_trunc('month', current_date)::date,
   posts_per_month int not null default 0 check (posts_per_month >= 0),

@@ -9,7 +9,7 @@ A React + Supabase project management system for Digimonde: plan, track and repo
 ## 1. Set up the database (≈5 minutes)
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor** → paste and run [`supabase/migrations/0001_schema.sql`](supabase/migrations/0001_schema.sql).
+2. Open **SQL Editor** → run the files in [`supabase/migrations/`](supabase/migrations) in order: `0001_schema.sql`, then `0002_dm_status_active_inactive.sql`. If you already ran 0001 earlier, just run 0002; it converts existing DM statuses to Active / Inactive.
 3. *(Optional, recommended for a demo)* run [`supabase/seed.sql`](supabase/seed.sql). It loads 15 employees, 6 clients, 9 dev projects (including MVP, Mobile Launch, Marketing Growth, Customer Acquisition, Fundraising and Hiring), 5 DM projects, 43 tasks, meetings, invoices, expenses, risks and assets. All dates are relative to today, so the demo always looks current.
 4. **Authentication → Providers → Email**: keep it enabled. For quick internal testing you can switch off “Confirm email”.
 
@@ -59,9 +59,9 @@ Access is enforced **in the database** with Row Level Security, not just hidden 
 
 | # | Module | Highlights |
 |---|---|---|
-| 1 | **Executive Dashboard** | Active / completed / delayed projects, upcoming deadlines, task KPIs, overdue tasks, average completion, team workload overview, project health score (0–100). Charts: project status donut, task completion by project, Gantt timeline with a today line, team workload, priority distribution, DM progress summary, a health table, a deadlines list and a **task pivot table** (by project / assignee / category / priority / department × status). A **department slicer** filters the whole page. Updates live via Supabase Realtime, on window focus and every 60 s. |
+| 1 | **Executive Dashboard** | Two separate sections. **Development projects:** active / completed / delayed projects, upcoming deadlines, task KPIs, overdue tasks, average completion, team workload overview, project health score (0–100). Charts: project status donut, task completion by project, Gantt timeline with a today line, team workload, priority distribution, a health table, a deadlines list and a **task pivot table** (by project / assignee / category / priority / department × status). A **department slicer** filters the Development section. **Digital marketing projects:** active vs inactive, posts planned / published / remaining, overall completion and projects behind plan. Updates live via Supabase Realtime, on window focus and every 60 s. |
 | 2 | **Projects — Dev** | Departments Web / SD / Media / Other. **Number of tasks, completed and remaining tasks, and completion % are pulled automatically from the task tracker.** Project health: 🔴 past target date · 🟡 due within 7 days, overdue tasks or critical risk · 🟢 on schedule. Actual completion date is stamped when status becomes Completed. |
-| 3 | **Projects — DM** | Posts / month, published, remaining (auto) and completion % = published ÷ posts / month (auto). |
+| 3 | **Projects — DM** | A separate project type with a simple **Active / Inactive** status. Posts / month, published, remaining (auto) and completion % = published ÷ posts / month (auto). Shown in its own section of the dashboard, never mixed into Dev project counts. |
 | 4 | **Tasks** | Multi-person **Assigned To**, days remaining = due − today, task health (Completed / Overdue / Urgent ≤ 3 days / On Track), colour-coded. Completion date and *Last Updated* are automatic. Sorted most-urgent first. |
 | 5 | **Meetings & Actions** | Participants (multi-select), decisions, action items, owner, deadline (overdue highlighted), status. |
 | 6 | **Team Resources** | Current projects, assigned / completed tasks, **workload % = open task hours ÷ (available hours × availability %)**. Under 60% = Underutilized (blue), 60–100% = Balanced (green), over 100% = Overloaded (red). |

@@ -1,7 +1,7 @@
 import { Megaphone } from 'lucide-react'
 import { DataTable } from '../components/DataTable'
 import { PageHeader } from '../components/ui'
-import { PRIORITIES, PROJECT_STATUSES, RISK_LEVELS } from '../lib/constants'
+import { DM_STATUSES, PRIORITIES, RISK_LEVELS } from '../lib/constants'
 import type { Column } from '../lib/types'
 
 const columns: Column[] = [
@@ -13,7 +13,7 @@ const columns: Column[] = [
   { key: 'manager_id', label: 'Project Manager', type: 'employee', filter: true },
   { key: 'handler_id', label: 'Project Handler', type: 'employee', filter: true },
   { key: 'priority', label: 'Priority', type: 'select', options: PRIORITIES, required: true, filter: true },
-  { key: 'status', label: 'Status', type: 'select', options: PROJECT_STATUSES, required: true, filter: true },
+  { key: 'status', label: 'Status', type: 'select', options: DM_STATUSES, required: true, filter: true },
   { key: 'start_date', label: 'Start Date', type: 'date' },
   { key: 'reporting_month', label: 'Reporting Month', type: 'date', hideInTable: true, help: 'First day of the month the post counts refer to.' },
   { key: 'posts_per_month', label: 'Posts / Month', type: 'number', min: 0 },
@@ -30,7 +30,7 @@ export default function ProjectsDM() {
       <PageHeader
         icon={<Megaphone size={20} />}
         title="Project Master Database — DM"
-        subtitle="Digital marketing retainers and campaigns. Completion % = published posts ÷ posts per month."
+        subtitle="Digital marketing retainers and campaigns (Active / Inactive). Completion % = published posts ÷ posts per month."
       />
       <DataTable
         readTable="projects_dm"
@@ -38,7 +38,7 @@ export default function ProjectsDM() {
         columns={columns}
         entity="DM Project"
         exportName="projects-dm"
-        defaults={{ priority: 'Medium', status: 'Planning', risk_level: 'Low', posts_per_month: 0, published_posts: 0 }}
+        defaults={{ priority: 'Medium', status: 'Active', risk_level: 'Low', posts_per_month: 0, published_posts: 0 }}
       />
     </>
   )
