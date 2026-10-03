@@ -5,7 +5,7 @@ import {
   Menu, Package, Receipt, ShieldCheck, Users as UsersIcon, X,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { Avatar } from './ui'
+import { Avatar, BrandMark, Wordmark } from './ui'
 
 const NAV = [
   { group: 'Overview', items: [{ to: '/', label: 'Executive Dashboard', icon: LayoutDashboard }] },
@@ -46,11 +46,11 @@ export function Layout() {
 
   const sidebar = (
     <nav className="flex h-full flex-col bg-navy text-slate-300">
-      <div className="flex items-center gap-2.5 px-5 py-5">
-        <img src="/favicon.svg" alt="" className="size-8 rounded-lg ring-1 ring-white/10" />
+      <div className="flex items-center gap-3 px-5 py-5">
+        <BrandMark className="size-10" />
         <div>
-          <p className="text-[15px] font-bold tracking-tight text-white">Digimonde</p>
-          <p className="text-[11px] text-slate-400">Project Management</p>
+          <Wordmark onDark className="text-[17px]" />
+          <p className="mt-1 text-[11px] text-slate-400">Project Management</p>
         </div>
       </div>
       <div className="flex-1 space-y-5 overflow-y-auto px-3 py-2">
@@ -81,7 +81,7 @@ export function Layout() {
           <Avatar id={profile?.employee_id ?? '0'} name={name} size="md" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-white">{name}</p>
-            <p className="text-[11px] text-slate-400">{isAdmin ? 'Admin · full access' : 'Employee · view only'}</p>
+            <p className="text-[11px] text-slate-400">{isAdmin ? 'Admin · full access' : 'Employee'}</p>
           </div>
           <button onClick={signOut} title="Sign out" className="rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-white">
             <LogOut size={16} />
@@ -105,13 +105,15 @@ export function Layout() {
           <button onClick={() => setOpen((o) => !o)} className="rounded-lg p-1.5 text-navy hover:bg-slate-100" aria-label="Menu">
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
-          <span className="font-bold text-navy">Digimonde</span>
+          <span className="flex items-center gap-2"><BrandMark className="size-7 p-0.5 shadow-none ring-1 ring-slate-200" /><Wordmark /></span>
         </header>
         <main key={pathname} className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
             {!isAdmin && (
               <div className="mb-4 rounded-lg border border-brand-100 bg-brand-50 px-3 py-2 text-xs text-brand-700">
-                You have <b>view-only</b> access. Ask an admin if you need to update records.
+                {pathname === '/tasks'
+                  ? <>You can <b>add and edit tasks</b>. Deleting tasks is admin-only.</>
+                  : <>This page is <b>view-only</b> for employees. You can add and edit tasks on the Tasks page.</>}
               </div>
             )}
             <Outlet />

@@ -4,22 +4,46 @@ import { supabase } from '../lib/supabase'
 import { useLookups } from '../context/LookupsContext'
 import { DataTable } from '../components/DataTable'
 import { Avatar, Badge, Card, EmptyState, PageHeader } from '../components/ui'
-import { ASSET_CATEGORIES, ASSET_CONDITIONS, ASSET_STATUSES, WARRANTY_STATUSES } from '../lib/constants'
+import { ASSET_CATEGORIES, ASSET_CONDITIONS, ASSET_STATUSES, BILLING_CYCLES, WARRANTY_STATUSES } from '../lib/constants'
 import { fmtDate, fmtDateTime } from '../lib/format'
 import type { Column, Row } from '../lib/types'
+
+const isSub = (r: Row) => r.category === 'Subscription'
+const notSub = (r: Row) => !isSub(r)
+
+const seatsCell = (r: Row) => {
+  if (!isSub(r)) return <span className="text-slate-300">—</span>
+  const over = r.seats != null && r.seats_used > r.seats
+  return (
+    <span className={`whitespace-nowrap tabular-nums ${over ? 'font-semibold text-danger-700' : ''}`} title={over ? 'More people than seats' : undefined}>
+      {r.seats_used}{r.seats != null ? ` / ${r.seats}` : ''}
+    </span>
+  )
+}
 
 const columns: Column[] = [
   { key: 'id', label: 'Asset ID', computed: true },
   { key: 'name', label: 'Asset Name', required: true, width: 'min-w-48' },
-  { key: 'category', label: 'Category', type: 'select', options: ASSET_CATEGORIES, required: true, filter: true },
-  { key: 'serial_number', label: 'Serial No.', render: (r) => <span className="font-mono text-xs text-slate-500">{r.serial_number ?? '—'}</span> },
-  { key: 'assigned_to', label: 'Employee Assigned', type: 'employee', filter: true, help: 'Changing this records a handover in the assignment log.' },
+  { key: 'category', label: 'Category', type: 'select', options: ASSET_CATEGORIES, required: true, filter: true,
+    help: 'Choose “Subscription” for shared services (ChatGPT, Figma, Google Workspace…) assigned to several people.' },
+  // Table: one "Assigned To" column for both physical assets and subscriptions
+  { key: 'holders', label: 'Assigned To', type: 'employees', computed: true, filter: true, width: 'min-w-40' },
+  { key: 'seats_used', label: 'Seats', computed: true, render: seatsCell },
   { key: 'assigned_since', label: 'Assigned Since', computed: true, render: (r) => <span className="whitespace-nowrap tabular-nums">{fmtDate(r.assigned_since)}</span> },
-  { key: 'purchase_date', label: 'Purchase Date', type: 'date' },
-  { key: 'purchase_cost', label: 'Cost', type: 'currency', min: 0, hideInTable: true },
-  { key: 'warranty_until', label: 'Warranty Until', type: 'date' },
-  { key: 'warranty_status', label: 'Warranty', type: 'select', options: WARRANTY_STATUSES, computed: true, filter: true },
-  { key: 'condition', label: 'Condition', type: 'select', options: ASSET_CONDITIONS, required: true },
+  // Form: physical asset → one person; subscription → many people
+  { key: 'assigned_to', label: 'Employee Assigned', type: 'employee', hideInTable: true, showIf: notSub, help: 'Changing this records a handover in the assignment log.' },
+  { key: 'assignees', label: 'Assigned To (users)', type: 'employees', hideInTable: true, showIf: isSub, help: 'Adding or removing a person is recorded in the assignment log with the date.' },
+  { key: 'seats', label: 'Seats / Licences', type: 'number', min: 0, hideInTable: true, showIf: isSub },
+  { key: 'billing_cycle', label: 'Billing Cycle', type: 'select', options: BILLING_CYCLES, hideInTable: true, showIf: isSub },
+  { key: 'serial_number', label: 'Serial No.', showIf: notSub, render: (r) => <span className="font-mono text-xs text-slate-500">{r.serial_number ?? '—'}</span> },
+  { key: 'purchase_date', label: 'Purchase / Start Date', type: 'date' },
+  { key: 'purchase_cost', label: 'Cost', type: 'currency', min: 0, hideInTable: true, help: 'For subscriptions: cost per billing cycle.' },
+  { key: 'expiry_date', label: 'Warranty / Renewal', type: 'date', computed: true },
+  { key: 'warranty_until', label: 'Warranty Until', type: 'date', hideInTable: true, showIf: notSub },
+  { key: 'renewal_date', label: 'Renewal Date', type: 'date', hideInTable: true, showIf: isSub },
+  { key: 'warranty_status', label: 'Warranty / Renewal Status', type: 'select', options: WARRANTY_STATUSES, computed: true, filter: true },
+  { key: 'condition', label: 'Condition', type: 'select', options: ASSET_CONDITIONS, required: true, showIf: notSub,
+    render: (r) => isSub(r) ? <span className="text-slate-300">—</span> : <Badge value={r.condition} /> },
   { key: 'status', label: 'Status', type: 'select', options: ASSET_STATUSES, required: true, filter: true, help: 'Switches between Available / Assigned automatically.' },
   { key: 'notes', label: 'Notes', type: 'textarea', hideInTable: true },
 ]
@@ -101,7 +125,7 @@ export default function Assets() {
   return (
     <>
       <PageHeader icon={<Package size={20} />} title="Company Assets"
-        subtitle="Every assignment and handover is logged automatically with its date." />
+        subtitle="Equipment and subscription services. Every assignment and handover is logged automatically with its date." />
       <div className="mb-4 inline-flex rounded-xl bg-slate-100 p-1">
         {(['assets', 'log'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
@@ -112,7 +136,7 @@ export default function Assets() {
       </div>
       {tab === 'assets' ? (
         <DataTable readTable="assets_v" writeTable="assets" columns={columns} entity="Asset" exportName="assets" reloadToken={token}
-          defaults={{ category: 'Laptop', condition: 'New', status: 'Available', purchase_cost: 0 }}
+          defaults={{ category: 'Laptop', condition: 'New', status: 'Available', purchase_cost: 0, assignees: [] }}
           rowActions={(r) => r.assigned_to ? (
             <button title="Record handover (return to company)" onClick={() => handOver(r)} className="rounded-md p-1.5 text-slate-400 hover:bg-warning-50 hover:text-warning-700">
               <Undo2 size={14} />

@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { BarChart3, CheckCircle2, ShieldCheck, Users } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { btn, inputCls } from '../components/ui'
+import { BrandMark, Wordmark, btn, inputCls } from '../components/ui'
 
 export default function Login() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
@@ -30,8 +30,11 @@ export default function Login() {
     <div className="grid min-h-full lg:grid-cols-2">
       <div className="hidden flex-col justify-between bg-navy p-12 text-white lg:flex">
         <div className="flex items-center gap-3">
-          <img src="/favicon.svg" alt="" className="size-10 rounded-xl ring-1 ring-white/10" />
-          <span className="text-lg font-bold">Digimonde</span>
+          <BrandMark className="size-11" />
+          <div>
+            <Wordmark onDark className="text-xl" />
+            <p className="mt-1 text-xs text-slate-400">Business growth partner</p>
+          </div>
         </div>
         <div>
           <h1 className="max-w-md text-4xl leading-tight font-bold tracking-tight">Every project, task and deadline in one place.</h1>
@@ -52,10 +55,7 @@ export default function Login() {
 
       <div className="flex items-center justify-center p-6">
         <form onSubmit={submit} className="w-full max-w-sm">
-          <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <img src="/favicon.svg" alt="" className="size-9 rounded-xl" />
-            <span className="text-lg font-bold text-navy">Digimonde</span>
-          </div>
+          <img src="/logo-full.png" alt="Digimonde — Business growth partner" className="mb-8 h-24 w-auto" />
           <h2 className="text-2xl font-bold tracking-tight text-navy">{mode === 'signin' ? 'Welcome back' : 'Create your account'}</h2>
           <p className="mt-1 mb-6 text-sm text-slate-500">
             {mode === 'signin' ? 'Sign in to your workspace.' : 'New accounts get employee (view-only) access. The first account becomes admin.'}

@@ -185,6 +185,15 @@ insert into public.assets (id, name, category, serial_number, assigned_to, purch
 ('AST-011', 'MacBook Air 13" M1',         'Laptop',          'C02DL1M2Q05N', null,      current_date - 900, 1100, current_date - 535, 'Poor',      'Retired',      'Battery health 71%.'),
 ('AST-012', 'Adobe Creative Cloud (team)', 'Software License', 'ACC-TEAM-2026', 'EMP-012', current_date - 60, 1080, current_date + 305, 'New',       'Assigned',     'Annual licence');
 
+-- Subscription services: shared by several people (needs migration 0005)
+update public.assets set category = 'Subscription', assignees = '{EMP-012,EMP-007}', seats = 3, billing_cycle = 'Annual', renewal_date = current_date + 305, warranty_until = null where id = 'AST-012';
+
+insert into public.assets (id, name, category, assignees, purchase_date, purchase_cost, seats, billing_cycle, renewal_date, condition, status, notes) values
+('AST-013', 'ChatGPT Team',              'Subscription', '{EMP-001,EMP-002,EMP-004,EMP-009,EMP-010}',                 current_date - 200, 150, 6,  'Monthly', current_date + 9,   'New', 'Assigned', 'Billed to company card'),
+('AST-014', 'Figma Professional',        'Subscription', '{EMP-007,EMP-005}',                                         current_date - 300, 540, 3,  'Annual',  current_date + 120, 'New', 'Assigned', null),
+('AST-015', 'Google Workspace Business', 'Subscription', '{EMP-001,EMP-002,EMP-003,EMP-009,EMP-013,EMP-014}',         current_date - 700, 216, 20, 'Monthly', current_date + 27,  'New', 'Assigned', 'Email & Drive for the whole team'),
+('AST-016', 'Canva Teams',               'Subscription', '{EMP-011,EMP-010,EMP-009}',                                 current_date - 368, 300, 5,  'Annual',  current_date - 3,   'New', 'Assigned', 'Renewal overdue — confirm with finance');
+
 -- Back-date the auto-created "currently assigned" log rows and add handover history.
 update public.asset_assignments l
    set assigned_at = (a.purchase_date + 3)::timestamptz
@@ -208,4 +217,4 @@ select setval('public.emp_seq', 15);
 select setval('public.cli_seq', 6);
 select setval('public.prj_seq', 9);
 select setval('public.dm_seq', 5);
-select setval('public.ast_seq', 12);
+select setval('public.ast_seq', 16);

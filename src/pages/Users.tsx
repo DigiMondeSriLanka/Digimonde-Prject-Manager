@@ -30,7 +30,7 @@ export default function Users() {
   return (
     <>
       <PageHeader icon={<ShieldCheck size={20} />} title="Users & Access"
-        subtitle="Admins can view and edit everything. Employees can only view the Dashboard, Projects (Dev & DM) and Tasks." />
+        subtitle="Admins can view and edit everything. Employees can view the Dashboard and Projects (Dev & DM), and add / edit Tasks." />
       {error && <div className="mb-4 rounded-lg bg-danger-50 p-3 text-sm text-danger-700">{error}</div>}
       <Card>
         <div className="overflow-x-auto">

@@ -84,10 +84,13 @@ interface Props {
   reloadToken?: number
   /** Extra content shown in the record dialog (e.g. asset history). */
   formExtra?: (row: Row | null) => ReactNode
+  /** Let employees add and edit rows too (delete stays admin-only). Must match the table's RLS policies. */
+  employeeCanEdit?: boolean
 }
 
-export function DataTable({ readTable, writeTable, columns, entity, exportName, orderBy, defaults, rowActions, onLoaded, toolbar, reloadToken, formExtra }: Props) {
+export function DataTable({ readTable, writeTable, columns, entity, exportName, orderBy, defaults, rowActions, onLoaded, toolbar, reloadToken, formExtra, employeeCanEdit }: Props) {
   const { isAdmin } = useAuth()
+  const canEdit = isAdmin || !!employeeCanEdit
   const lk = useLookups()
   const [rows, setRows] = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
@@ -190,7 +193,7 @@ export function DataTable({ readTable, writeTable, columns, entity, exportName, 
           <button className={btn.secondary} onClick={exportCsv} title="Export the filtered rows to CSV (opens in Excel)">
             <Download size={15} /> Export
           </button>
-          {isAdmin && (
+          {canEdit && (
             <button className={btn.primary} onClick={() => setEditing(null)}>
               <Plus size={16} /> New {entity}
             </button>
@@ -243,8 +246,8 @@ export function DataTable({ readTable, writeTable, columns, entity, exportName, 
                   <td className="sticky right-0 border-b border-slate-100 bg-white px-2 py-2 text-right whitespace-nowrap group-hover:bg-slate-50" onClick={(e) => e.stopPropagation()}>
                     <span className="inline-flex items-center gap-0.5">
                       {rowActions?.(r)}
-                      <button className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand" title={isAdmin ? 'Edit' : 'View'} onClick={() => setEditing(r)}>
-                        {isAdmin ? <Pencil size={14} /> : <Eye size={14} />}
+                      <button className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand" title={canEdit ? 'Edit' : 'View'} onClick={() => setEditing(r)}>
+                        {canEdit ? <Pencil size={14} /> : <Eye size={14} />}
                       </button>
                       {isAdmin && (
                         <button className="rounded-md p-1.5 text-slate-400 hover:bg-danger-50 hover:text-danger" title="Delete" onClick={() => remove(r)}>
@@ -261,7 +264,7 @@ export function DataTable({ readTable, writeTable, columns, entity, exportName, 
       </div>
       <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2.5 text-xs text-slate-500">
         <span>Showing <b className="text-navy">{visible.length}</b> of {rows.length} {entity.toLowerCase()}s</span>
-        <span className="hidden sm:inline">Click a row to {isAdmin ? 'edit' : 'view details'}</span>
+        <span className="hidden sm:inline">Click a row to {canEdit ? 'edit' : 'view details'}</span>
       </div>
 
       <RecordForm
@@ -270,7 +273,7 @@ export function DataTable({ readTable, writeTable, columns, entity, exportName, 
         columns={columns}
         writeTable={writeTable}
         entity={entity}
-        readOnly={!isAdmin}
+        readOnly={!canEdit}
         defaults={defaults}
         extra={formExtra}
         onClose={() => setEditing(undefined)}

@@ -47,6 +47,7 @@ export default function Tasks() {
         columns={columns}
         entity="Task"
         exportName="tasks"
+        employeeCanEdit
         orderBy={{ column: 'days_remaining', ascending: true }}
         defaults={{ category: 'Development', priority: 'Medium', status: 'Backlog', risk: 'Low', assigned_to: [], estimated_hours: 0 }}
       />

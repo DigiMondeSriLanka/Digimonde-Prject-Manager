@@ -48,7 +48,8 @@ export function RecordForm({ open, row, columns, writeTable, entity, readOnly, d
     const payload: Row = {}
     for (const c of editable) {
       let v = form[c.key]
-      if (c.required && (v === '' || v === null || (Array.isArray(v) && !v.length))) {
+      const shown = !c.showIf || c.showIf(form)
+      if (shown && c.required && (v === '' || v === null || (Array.isArray(v) && !v.length))) {
         setError(`${c.label} is required.`)
         return
       }
@@ -149,7 +150,7 @@ export function RecordForm({ open, row, columns, writeTable, entity, readOnly, d
       )}
 
       <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
-        {editable.map((c) => (
+        {editable.filter((c) => !c.showIf || c.showIf(form)).map((c) => (
           <div key={c.key} className={`block ${c.wide || c.type === 'textarea' || c.type === 'employees' ? 'sm:col-span-2' : ''}`}>
             <span className="mb-1 block text-xs font-medium text-slate-600">
               {c.label} {c.required && !readOnly && <span className="text-danger">*</span>}

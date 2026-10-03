@@ -32,4 +32,6 @@ export interface Column {
   help?: string
   /** Tailwind min-width class for the table cell. */
   width?: string
+  /** Only show (and validate) this field in the form when it returns true. */
+  showIf?: (form: Row) => boolean
 }

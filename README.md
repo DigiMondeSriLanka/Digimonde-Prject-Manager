@@ -9,7 +9,7 @@ A React + Supabase project management system for Digimonde: plan, track and repo
 ## 1. Set up the database (≈5 minutes)
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor** → run the files in [`supabase/migrations/`](supabase/migrations) in order: `0001_schema.sql`, `0002_dm_status_active_inactive.sql`, `0003_tasks_for_dm_projects.sql`. Each file is safe to run on a database that already has the earlier ones, so on an existing database just run the ones you haven't run yet.
+2. Open **SQL Editor** → run the files in [`supabase/migrations/`](supabase/migrations) in order: `0001_schema.sql`, `0002_dm_status_active_inactive.sql`, `0003_tasks_for_dm_projects.sql`, `0004_employees_manage_tasks.sql`, `0005_asset_subscriptions.sql`. Each file is safe to run on a database that already has the earlier ones, so on an existing database just run the ones you haven't run yet.
 3. *(Optional, recommended for a demo)* run [`supabase/seed.sql`](supabase/seed.sql). It loads 15 employees, 6 clients, 9 dev projects (including MVP, Mobile Launch, Marketing Growth, Customer Acquisition, Fundraising and Hiring), 5 DM projects, 43 tasks, meetings, invoices, expenses, risks and assets. All dates are relative to today, so the demo always looks current.
 4. **Authentication → Providers → Email**: keep it enabled. For quick internal testing you can switch off “Confirm email”.
 
@@ -50,10 +50,11 @@ Routing: Cloudflare Pages serves `index.html` for every path when the site has n
 | | Admin | Employee |
 |---|---|---|
 | Executive Dashboard | ✅ view | ✅ view |
-| Projects — Dev, Projects — DM, Tasks | ✅ view / add / edit / delete | ✅ view only |
+| Projects — Dev, Projects — DM | ✅ view / add / edit / delete | ✅ view only |
+| Tasks | ✅ view / add / edit / delete | ✅ view / add / edit (no delete) |
 | Meetings, Team, Clients, Invoices & Expenses, Risks, Assets, Users | ✅ full | ❌ hidden |
 
-Access is enforced **in the database** with Row Level Security, not just hidden in the UI. An employee calling the API directly still cannot read finance data or edit anything.
+Access is enforced **in the database** with Row Level Security, not just hidden in the UI. An employee calling the API directly still cannot read finance data, edit projects or delete tasks.
 
 ## Modules
 
@@ -68,7 +69,7 @@ Access is enforced **in the database** with Row Level Security, not just hidden 
 | 7 | **Clients** | Full client register with contract value and account manager. |
 | 8 | **Invoices & Expenses** | Balance = amount − paid (auto). Payment status Paid / Partially Paid / Unpaid / Overdue (auto) with days overdue. Expenses by category. Summary: invoiced, received, outstanding, overdue, expenses and net cash balance. |
 | 9 | **Risks & Issues** | Score = probability × impact (auto); 1–5 Low, 6–12 Medium, 13–25 Critical. Includes a 5×5 heat map. |
-| 10 | **Company Assets** | Warranty status (auto). **Every assignment and handover is logged automatically** (date assigned, date handed over, condition out/in) by a database trigger. Per-asset history plus a full log, and a one-click "record handover" button. |
+| 10 | **Company Assets** | Equipment **and subscription services** (ChatGPT, Figma, Google Workspace…). A subscription can be assigned to **several people** and tracks seats used / seats, billing cycle and renewal date (*Renewing Soon* within 14 days). Warranty status (auto). **Every assignment and handover is logged automatically** (date assigned, date handed over, condition out/in) by a database trigger, per person for subscriptions. Per-asset history plus a full log, and a one-click "record handover" button. |
 
 ### Automation, in spreadsheet terms
 

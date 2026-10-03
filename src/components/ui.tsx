@@ -155,3 +155,22 @@ export function Spinner() {
 export function EmptyState({ text }: { text: string }) {
   return <div className="py-12 text-center text-sm text-slate-400">{text}</div>
 }
+
+/** The Digimonde "D" mark on a white tile, so every colour of the logo reads on dark backgrounds too. */
+export function BrandMark({ className = 'size-9' }: { className?: string }) {
+  return (
+    <span className={`grid shrink-0 place-items-center rounded-xl bg-white p-1 shadow-sm ${className}`}>
+      <img src="/logo-mark.png" alt="Digimonde" className="size-full object-contain" />
+    </span>
+  )
+}
+
+/** DIGI (light, blue) + MONDE (bold, orange), matching the logo. Use `onDark` on navy backgrounds. */
+export function Wordmark({ onDark = false, className = 'text-[15px]' }: { onDark?: boolean; className?: string }) {
+  return (
+    <span className={`leading-none tracking-tight ${className}`}>
+      <span className={`font-normal ${onDark ? 'text-[#4BA3F0]' : 'text-[#1873C2]'}`}>DIGI</span>
+      <span className="font-extrabold text-[#F28322]">MONDE</span>
+    </span>
+  )
+}

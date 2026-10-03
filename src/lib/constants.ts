@@ -23,10 +23,11 @@ export const RISK_CATEGORIES = ['Technical', 'Financial', 'Market', 'Customer', 
 export const RISK_STATUSES = ['Open', 'Monitoring', 'Mitigated', 'Escalated', 'Closed'] as const
 export const SEVERITY_LEVELS = ['Low', 'Medium', 'Critical'] as const
 export const SCALE_1_5 = ['1', '2', '3', '4', '5'] as const
-export const ASSET_CATEGORIES = ['Laptop', 'Desktop', 'Monitor', 'Mobile Device', 'Camera', 'Audio', 'Networking', 'Furniture', 'Software License', 'Other'] as const
+export const ASSET_CATEGORIES = ['Laptop', 'Desktop', 'Monitor', 'Mobile Device', 'Camera', 'Audio', 'Networking', 'Furniture', 'Software License', 'Subscription', 'Other'] as const
+export const BILLING_CYCLES = ['Monthly', 'Quarterly', 'Annual', 'One-time'] as const
 export const ASSET_CONDITIONS = ['New', 'Excellent', 'Good', 'Fair', 'Poor', 'Damaged'] as const
 export const ASSET_STATUSES = ['Available', 'Assigned', 'Under Repair', 'Retired', 'Lost'] as const
-export const WARRANTY_STATUSES = ['Active', 'Expiring Soon', 'Expired', 'No Warranty'] as const
+export const WARRANTY_STATUSES = ['Active', 'Expiring Soon', 'Renewing Soon', 'Expired', 'No Warranty', 'No Renewal Date'] as const
 
 export const HEALTH_LABEL: Record<string, string> = {
   Green: 'Healthy',
@@ -42,14 +43,14 @@ const TONES: Record<string, Tone> = {
   // health & state
   Green: 'green', Healthy: 'green', Completed: 'green', Paid: 'green', Balanced: 'green',
   Active: 'green', Mitigated: 'green', Closed: 'gray', Available: 'green', New: 'green', Excellent: 'green', Good: 'green',
-  Yellow: 'yellow', Attention: 'yellow', Medium: 'yellow', 'Partially Paid': 'yellow', Monitoring: 'yellow', Fair: 'yellow', 'Expiring Soon': 'yellow', Pending: 'yellow',
+  Yellow: 'yellow', Attention: 'yellow', Medium: 'yellow', 'Partially Paid': 'yellow', Monitoring: 'yellow', Fair: 'yellow', 'Expiring Soon': 'yellow', 'Renewing Soon': 'yellow', Pending: 'yellow',
   Urgent: 'orange', High: 'orange', 'On Hold': 'orange', 'Under Repair': 'orange', Review: 'orange', 'On Leave': 'orange', Poor: 'orange',
   Red: 'red', 'At Risk': 'red', Overdue: 'red', Critical: 'red', Blocked: 'red', Overloaded: 'red', Escalated: 'red',
   Lost: 'red', Damaged: 'red', Expired: 'red', Churned: 'red', Cancelled: 'gray', Unpaid: 'orange',
   // flow
   'In Progress': 'blue', 'On Track': 'blue', Development: 'blue', Testing: 'blue', Launch: 'teal', Assigned: 'blue', Sent: 'blue', Underutilized: 'blue', Lead: 'teal',
   Planning: 'navy', Research: 'navy', Backlog: 'gray', Draft: 'gray', Open: 'navy', Low: 'green',
-  Retired: 'gray', Inactive: 'gray', 'No Warranty': 'gray',
+  Retired: 'gray', Inactive: 'gray', 'No Warranty': 'gray', 'No Renewal Date': 'gray',
 }
 
 export function toneFor(value: unknown): Tone {
